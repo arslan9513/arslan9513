@@ -94,26 +94,26 @@ class SystemScanner:
         suffix = file.suffix.lower()
         if suffix in SUSPICIOUS_EXTENSIONS:
             score += 25
-            reasons.append(f"Подозрительное расширение {suffix}")
+            reasons.append(f"Suspicious extension {suffix}")
 
         lower = data.lower()
         matches = sum(1 for marker in MALWARE_KEYWORDS if marker in lower)
         if matches:
             score += 20 + matches * 8
-            reasons.append(f"Найдены сигнатурные ключи: {matches}")
+            reasons.append(f"Signature keyword matches: {matches}")
 
         entropy = self._shannon_entropy(data[: min(len(data), 50000)])
         if entropy > 7.2:
             score += 25
-            reasons.append(f"Высокая энтропия ({entropy:.2f})")
+            reasons.append(f"High entropy ({entropy:.2f})")
 
         if deep and b"socket" in lower and b"subprocess" in lower:
             score += 20
-            reasons.append("Комбинация socket + subprocess")
+            reasons.append("socket + subprocess combination")
 
         if deep and b"cryptography" in lower and b"fernet" in lower:
             score += 18
-            reasons.append("Возможная шифровальная активность")
+            reasons.append("Potential encryption activity")
 
         return min(score, 100.0), reasons
 

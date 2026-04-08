@@ -115,7 +115,7 @@ class MainWindow(QMainWindow):
         title = QLabel("System Threat Dashboard")
         title.setStyleSheet("font-size: 24px; font-weight: 700;")
 
-        self.dashboard_summary = QLabel("Запустите сканы для построения сводки.")
+        self.dashboard_summary = QLabel("Run scans to build a threat summary.")
         self.dashboard_summary.setWordWrap(True)
 
         self.dashboard_log = QPlainTextEdit()
@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
 
         self.quick_table = self._make_findings_table()
 
-        layout.addWidget(QLabel("Папки для быстрого скана (через ';')"))
+        layout.addWidget(QLabel("Quick scan folders (separate with ';')"))
         layout.addWidget(self.quick_paths)
         layout.addLayout(quick_btn_bar)
         layout.addWidget(self.quick_table)
@@ -156,7 +156,7 @@ class MainWindow(QMainWindow):
 
         self.deep_table = self._make_findings_table()
 
-        layout.addWidget(QLabel("Папки для глубокого скана (через ';')"))
+        layout.addWidget(QLabel("Deep scan folders (separate with ';')"))
         layout.addWidget(self.deep_paths)
         layout.addLayout(deep_btn_bar)
         layout.addWidget(self.deep_table)
@@ -182,7 +182,7 @@ class MainWindow(QMainWindow):
         self.quarantine_log = QPlainTextEdit()
         self.quarantine_log.setReadOnly(True)
 
-        layout.addWidget(QLabel("Путь к файлу для изоляции"))
+        layout.addWidget(QLabel("File path to isolate"))
         layout.addWidget(self.quarantine_path_input)
         layout.addWidget(self.btn_isolate)
         layout.addWidget(self.quarantine_log)
@@ -248,7 +248,7 @@ class MainWindow(QMainWindow):
         self.btn_deep_browse.clicked.connect(lambda: self._pick_folder(self.deep_paths))
 
     def _pick_folder(self, target: QLineEdit) -> None:
-        folder = QFileDialog.getExistingDirectory(self, "Выберите папку")
+        folder = QFileDialog.getExistingDirectory(self, "Select Folder")
         if folder:
             current = target.text().strip()
             target.setText(f"{current};{folder}" if current else folder)
@@ -332,29 +332,29 @@ class MainWindow(QMainWindow):
                 quarantine_dir=self.settings_quarantine_dir.text().strip(),
             )
         except ValueError:
-            QMessageBox.warning(self, "Ошибка", "Max file size должен быть целым числом")
+            QMessageBox.warning(self, "Error", "Max file size must be an integer")
             return
 
         self.settings = updated
         self.settings_store.save(self.settings)
         self.scanner = SystemScanner(max_file_size_mb=self.settings.max_file_size_mb)
         self.quarantine = QuarantineManager(self.settings.quarantine_dir)
-        self.settings_log.appendPlainText("Настройки сохранены")
+        self.settings_log.appendPlainText("Settings saved")
         self.dashboard_log.appendPlainText("Settings updated.")
         self._refresh_dashboard()
 
     def isolate_file(self) -> None:
         target = self.quarantine_path_input.text().strip()
         if not target:
-            QMessageBox.information(self, "Info", "Укажите путь к файлу")
+            QMessageBox.information(self, "Info", "Please provide a file path")
             return
 
         try:
             new_path = self.quarantine.isolate(target)
-            self.quarantine_log.appendPlainText(f"Файл изолирован: {new_path}")
+            self.quarantine_log.appendPlainText(f"File isolated: {new_path}")
             self.dashboard_log.appendPlainText(f"File moved to quarantine: {new_path}")
         except FileNotFoundError:
-            QMessageBox.warning(self, "Ошибка", "Файл не найден")
+            QMessageBox.warning(self, "Error", "File not found")
 
     def dump_state(self) -> str:
         payload = {
